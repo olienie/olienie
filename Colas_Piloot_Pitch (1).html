@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colas — Pilootweek Automatisering</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0a0f1e;
+  --paper: #f4f1eb;
+  --colas: #e8401c;
+  --steel: #1c2b4a;
+  --steel-mid: #2e4470;
+  --fog: #ddd8ce;
+  --muted: #8a8278;
+  --success: #1a7a45;
+  --warn: #c47a00;
+  --white: #ffffff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--paper); color:var(--ink); min-height:100vh; overflow-x:hidden; }
+
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+/* NAV */
+.nav { background:var(--steel); display:flex; align-items:center; justify-content:space-between; padding:0 40px; position:sticky; top:0; z-index:100; }
+.nav-logo { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--colas); letter-spacing:3px; padding:16px 0; }
+.nav-tabs { display:flex; gap:2px; }
+.nav-tab { font-family:'DM Sans',sans-serif; font-weight:700; font-size:11px; letter-spacing:2px; text-transform:uppercase; padding:20px 24px; background:none; border:none; border-bottom:3px solid transparent; color:rgba(255,255,255,0.4); cursor:pointer; transition:all .2s; }
+.nav-tab:hover { color:white; }
+.nav-tab.active { color:var(--colas); border-bottom-color:var(--colas); }
+
+/* HERO */
+.hero { background:var(--steel); color:white; padding:64px 40px 80px; position:relative; overflow:hidden; }
+.hero::before {
+  content:'PILOT'; position:absolute; right:-20px; top:-30px;
+  font-family:'Bebas Neue',sans-serif; font-size:280px; line-height:1;
+  color:rgba(255,255,255,0.025); pointer-events:none; letter-spacing:-10px;
+}
+.hero::after { content:''; position:absolute; bottom:-1px; left:0; right:0; height:48px; background:var(--paper); clip-path:polygon(0 100%,100% 100%,100% 0); }
+.hero-inner { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:1fr 420px; gap:48px; align-items:center; position:relative; z-index:1; }
+.hero-eyebrow { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:4px; text-transform:uppercase; color:var(--colas); margin-bottom:16px; }
+.hero-h { font-family:'Bebas Neue',sans-serif; font-size:clamp(56px,8vw,100px); line-height:.9; letter-spacing:1px; }
+.hero-h em { font-style:normal; color:var(--colas); }
+.hero-p { margin-top:20px; font-size:15px; color:rgba(255,255,255,.55); line-height:1.7; font-weight:300; max-width:460px; }
+
+/* QUOTE BOX */
+.quote-box {
+  border-left:4px solid var(--colas);
+  padding:28px 32px;
+  background:rgba(255,255,255,0.04);
+  position:relative;
+}
+.quote-box::before { content:'\201C'; font-family:'Bebas Neue',sans-serif; font-size:120px; color:var(--colas); opacity:.25; position:absolute; top:-20px; left:16px; line-height:1; pointer-events:none; }
+.quote-text { font-size:18px; line-height:1.55; font-weight:300; font-style:italic; color:rgba(255,255,255,.9); position:relative; }
+.quote-text strong { font-style:normal; font-weight:700; color:white; }
+.quote-source { margin-top:14px; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.35); }
+
+/* MAIN */
+main { max-width:1100px; margin:0 auto; padding:0 40px; position:relative; z-index:1; }
+.panel { display:none; padding:52px 0 80px; animation:up .3s ease; }
+.panel.active { display:block; }
+@keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── SECTION HEADERS ── */
+.sec-tag { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+.sec-h { font-family:'Bebas Neue',sans-serif; font-size:40px; line-height:1; margin-bottom:4px; }
+.sec-sub { font-size:14px; color:var(--muted); margin-bottom:36px; }
+
+/* ── PITCH PANEL ── */
+.versus { display:grid; grid-template-columns:1fr 1fr; gap:2px; margin-bottom:2px; }
+.versus-card { padding:36px; }
+.versus-card.bad { background:var(--ink); color:white; }
+.versus-card.good { background:var(--success); color:white; }
+.vc-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; opacity:.5; margin-bottom:12px; }
+.vc-title { font-family:'Bebas Neue',sans-serif; font-size:32px; margin-bottom:20px; }
+.vc-list { list-style:none; display:flex; flex-direction:column; gap:10px; }
+.vc-list li { font-size:13px; line-height:1.5; padding-left:22px; position:relative; opacity:.85; }
+.vc-list li::before { position:absolute; left:0; font-weight:700; }
+.versus-card.bad .vc-list li::before { content:'✕'; color:var(--colas); }
+.versus-card.good .vc-list li::before { content:'✓'; color:rgba(255,255,255,.7); }
+
+.timebar { background:var(--steel); display:grid; grid-template-columns:1fr 80px 1fr; align-items:center; padding:40px 48px; gap:16px; }
+.tb-block { text-align:center; }
+.tb-num { font-family:'Bebas Neue',sans-serif; font-size:80px; line-height:1; display:block; }
+.tb-num.before { color:var(--colas); }
+.tb-num.after { color:#4ade80; }
+.tb-unit { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.4); }
+.tb-desc { font-size:12px; color:rgba(255,255,255,.3); margin-top:6px; }
+.tb-arrow { font-family:'Bebas Neue',sans-serif; font-size:52px; color:rgba(255,255,255,.15); text-align:center; }
+.saving-strip { background:var(--colas); color:white; padding:18px 48px; display:flex; justify-content:space-between; align-items:center; }
+.saving-strip strong { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:1px; }
+.saving-strip span { font-size:13px; opacity:.8; max-width:400px; line-height:1.5; }
+
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:2px; margin-top:2px; }
+.kpi { background:white; border:1px solid var(--fog); padding:28px 24px; text-align:center; }
+.kpi-num { font-family:'Bebas Neue',sans-serif; font-size:52px; color:var(--steel); line-height:1; }
+.kpi-lbl { font-size:11px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; margin-top:4px; }
+
+/* ── PILOT PANEL ── */
+.pilot-intro { background:var(--steel); color:white; padding:40px 48px; margin-bottom:2px; display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
+.pi-h { font-family:'Bebas Neue',sans-serif; font-size:48px; line-height:.95; margin-bottom:12px; }
+.pi-h em { font-style:normal; color:var(--colas); }
+.pi-p { font-size:14px; color:rgba(255,255,255,.6); line-height:1.7; }
+.pi-why { border-left:3px solid var(--colas); padding-left:20px; }
+.pi-why-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--colas); margin-bottom:10px; }
+.pi-why-list { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.pi-why-list li { font-size:13px; color:rgba(255,255,255,.7); padding-left:16px; position:relative; line-height:1.5; }
+.pi-why-list li::before { content:'→'; position:absolute; left:0; color:var(--colas); }
+
+.week-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:2px; margin-bottom:2px; }
+.day-card { background:white; border:1px solid var(--fog); overflow:hidden; }
+.day-head { background:var(--steel-mid); color:white; padding:14px 16px; }
+.day-name { font-family:'Bebas Neue',sans-serif; font-size:22px; line-height:1; }
+.day-focus { font-size:10px; font-family:'DM Mono',monospace; letter-spacing:1px; text-transform:uppercase; color:rgba(255,255,255,.4); margin-top:2px; }
+.day-body { padding:16px; display:flex; flex-direction:column; gap:8px; }
+.day-task { font-size:12px; line-height:1.4; color:#333; padding:8px 10px; background:var(--paper); border-left:2px solid var(--fog); }
+.day-task.measure { border-left-color:var(--warn); }
+.day-task.flow { border-left-color:var(--colas); }
+.day-task.eval { border-left-color:var(--success); }
+
+.measure-flow { background:var(--ink); color:white; padding:36px 40px; margin-bottom:2px; }
+.mf-title { font-family:'Bebas Neue',sans-serif; font-size:28px; margin-bottom:6px; }
+.mf-sub { font-size:12px; color:rgba(255,255,255,.4); font-family:'DM Mono',monospace; letter-spacing:2px; text-transform:uppercase; margin-bottom:24px; }
+.mf-chain { display:flex; gap:0; overflow-x:auto; }
+.mf-node { flex:1; min-width:130px; border-right:1px solid rgba(255,255,255,.08); padding:20px 16px; text-align:center; }
+.mf-node:last-child { border-right:none; }
+.mf-node-num { font-family:'Bebas Neue',sans-serif; font-size:40px; color:rgba(255,255,255,.1); line-height:1; }
+.mf-node-label { font-size:12px; font-weight:700; color:white; margin:4px 0; }
+.mf-node-tool { font-family:'DM Mono',monospace; font-size:10px; color:var(--colas); }
+
+.metrics-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+.metric-card { background:white; border:1px solid var(--fog); padding:28px; }
+.metric-icon { font-size:28px; margin-bottom:12px; display:block; }
+.metric-title { font-family:'Bebas Neue',sans-serif; font-size:22px; margin-bottom:8px; color:var(--steel); }
+.metric-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
+.metric-list li { font-size:12px; color:#444; line-height:1.5; display:flex; gap:8px; }
+.metric-list li::before { content:'◦'; color:var(--colas); flex-shrink:0; }
+
+.eval-strip { background:var(--success); color:white; padding:28px 40px; margin-top:2px; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; }
+.eval-title { font-family:'Bebas Neue',sans-serif; font-size:32px; line-height:1; margin-bottom:8px; }
+.eval-p { font-size:13px; color:rgba(255,255,255,.75); line-height:1.6; }
+.go-nogo { display:flex; gap:16px; }
+.go-box { flex:1; padding:20px; text-align:center; border:1px solid rgba(255,255,255,.2); }
+.go-box .label { font-family:'Bebas Neue',sans-serif; font-size:28px; }
+.go-box .sub { font-size:11px; color:rgba(255,255,255,.5); margin-top:4px; letter-spacing:1px; text-transform:uppercase; }
+.go-box.go { background:rgba(255,255,255,.15); }
+.go-box.nogo { background:rgba(0,0,0,.2); }
+
+/* ── SYSTEM PANEL ── */
+.flow-chain { display:flex; gap:0; margin-bottom:2px; overflow-x:auto; }
+.fc-node { flex:1; min-width:140px; background:white; border:1px solid var(--fog); border-right:none; padding:28px 20px; text-align:center; transition:all .2s; cursor:default; }
+.fc-node:last-child { border-right:1px solid var(--fog); }
+.fc-icon { font-size:28px; display:block; margin-bottom:8px; }
+.fc-label { font-weight:700; font-size:13px; }
+.fc-tool { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); margin-top:4px; }
+.fc-sep { display:flex; align-items:center; padding:0 6px; color:var(--muted); font-weight:700; font-size:18px; flex-shrink:0; }
+
+.flows-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+.flow-card { background:white; border:1px solid var(--fog); overflow:hidden; }
+.flow-head { color:white; padding:18px 20px; display:flex; align-items:center; gap:14px; }
+.flow-num { font-family:'Bebas Neue',sans-serif; font-size:40px; line-height:1; opacity:.3; }
+.flow-info {}
+.flow-name { font-weight:700; font-size:14px; }
+.flow-trigger { font-family:'DM Mono',monospace; font-size:9px; opacity:.6; letter-spacing:1px; margin-top:2px; }
+.flow-body { padding:18px 20px; }
+.flow-step { display:flex; gap:10px; font-size:12px; color:#444; padding:5px 0; border-bottom:1px solid var(--fog); line-height:1.4; }
+.flow-step:last-child { border:none; }
+.step-n { width:18px; height:18px; border-radius:50%; background:var(--steel); color:white; font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+
+.new-flow-badge { background:var(--colas); color:white; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:2px 8px; margin-left:8px; vertical-align:middle; }
+
+/* RESPONSIVE */
+@media(max-width:768px) {
+  .nav { padding:0 16px; }
+  .nav-tab { padding:18px 12px; font-size:10px; }
+  .hero-inner { grid-template-columns:1fr; }
+  .hero { padding:40px 20px 60px; }
+  main { padding:0 16px; }
+  .versus, .pilot-intro, .kpis, .week-grid, .metrics-grid, .flows-grid { grid-template-columns:1fr; }
+  .timebar { grid-template-columns:1fr; }
+  .tb-arrow { transform:rotate(90deg); }
+  .eval-strip { grid-template-columns:1fr; }
+  .saving-strip { flex-direction:column; gap:8px; align-items:flex-start; }
+}
+@media print {
+  .nav, .nav-tab { display:none; }
+  .panel { display:block !important; page-break-after:always; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">COLAS</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab(1)">01 — Pitch</button>
+    <button class="nav-tab" onclick="switchTab(2)">02 — Pilootweek</button>
+    <button class="nav-tab" onclick="switchTab(3)">03 — Systeem</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">Colas België NV · Projectautomatisering 2025</div>
+      <h1 class="hero-h">STOP HET<br><em>PAPIER</em>WERK</h1>
+      <p class="hero-p">PUURS & ZWIJNDRECHT volledig geautomatiseerd — van WhatsApp-foto's en papieren bonnetjes naar een zelfrijdend digitaal systeem in Microsoft 365. Bewezen in <strong style="color:white">één pilootweek</strong>.</p>
+    </div>
+    <div class="quote-box">
+      <p class="quote-text">
+        "We meten niet om te rapporteren.<br>
+        We meten om te <strong>bewijzen</strong> dat het werkt —<br>
+        en dan <strong>nooit meer terug</strong> te gaan."
+      </p>
+      <div class="quote-source">Jolien · Projectmanager Colas · Zwijndrecht 2025</div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ══ TAB 1: PITCH ══ -->
+<div class="panel active" id="panel-1">
+
+  <div class="versus">
+    <div class="versus-card bad">
+      <div class="vc-label">Vandaag — elke huisaansluiting</div>
+      <div class="vc-title">Dit kost ons geld</div>
+      <ul class="vc-list">
+        <li>Foto's via WhatsApp, losse notities, papieren bonnetjes</li>
+        <li>15–30 min/dag werfleider sorteert berichten</li>
+        <li>Dubbele invoer: werf → werfleider → admin → Geo-IT → Excel</li>
+        <li>Elke Vlario-fiche: 15–30 min handwerk</li>
+        <li>Restpunten vergeten, deadlines gemist</li>
+        <li>Junior deeltijds → dingen vallen door de mazen</li>
+      </ul>
+    </div>
+    <div class="versus-card good">
+      <div class="vc-label">Na automatisering — zelfde aansluiting</div>
+      <div class="vc-title">Dit doet het systeem</div>
+      <ul class="vc-list">
+        <li>Junior scant QR in werfkeet, vult 1 formulier in op smartphone</li>
+        <li>Power Automate verwerkt alles in &lt;60 seconden</li>
+        <li>Vlario-fiche aangemaakt, opgeslagen, verstuurd per mail</li>
+        <li>Jolien krijgt Teams-notificatie + PDF direct klaar</li>
+        <li>Restpunten escaleren automatisch bij overschrijding</li>
+        <li>Weekplanning & vorderingsstaat genereren zichzelf</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="timebar">
+    <div class="tb-block">
+      <span class="tb-num before">125</span>
+      <div class="tb-unit">min / aansluiting</div>
+      <div class="tb-desc">Papier · WhatsApp · dubbele invoer · Vlario handwerk</div>
+    </div>
+    <div class="tb-arrow">→</div>
+    <div class="tb-block">
+      <span class="tb-num after">5</span>
+      <div class="tb-unit">min / aansluiting</div>
+      <div class="tb-desc">Formulier invullen · automatische fiche · klaar</div>
+    </div>
+  </div>
+  <div class="saving-strip">
+    <strong>425 uur bespaard op Zwijndrecht alleen</strong>
+    <span>Dat is meer dan 10 voltijdse werkweken — teruggewonnen met exact dezelfde mensen en tools die Colas al betaalt.</span>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-num">97%</div><div class="kpi-lbl">Tijdsbesparing per fiche</div></div>
+    <div class="kpi"><div class="kpi-num">€0</div><div class="kpi-lbl">Extra licentiekosten (M365 actief)</div></div>
+    <div class="kpi"><div class="kpi-num">6u</div><div class="kpi-lbl">Eenmalige opbouwtijd</div></div>
+    <div class="kpi"><div class="kpi-num">1w</div><div class="kpi-lbl">Piloot · meet & beslis</div></div>
+  </div>
+
+</div>
+
+<!-- ══ TAB 2: PILOOTWEEK ══ -->
+<div class="panel" id="panel-2">
+
+  <div class="pilot-intro">
+    <div>
+      <div class="pi-h">1 WEEK.<br><em>ALLES</em><br>OPMETEN.</div>
+      <p class="pi-p">Geen blind vertrouwen — gewoon één week draaien op Zwijndrecht Fase 1 (Bareelstraat), alles meten, en dan objectief beslissen. Als het werkt, rollen we uit. Als niet, weten we waarom.</p>
+    </div>
+    <div class="pi-why">
+      <div class="pi-why-title">Waarom een piloot?</div>
+      <ul class="pi-why-list">
+        <li>Junior leert het systeem zonder druk van 7 fasen tegelijk</li>
+        <li>Jij test de flow voor er 300 aansluitingen in staan</li>
+        <li>Management ziet cijfers, geen beloftes</li>
+        <li>Bugs vinden met 10 aansluitingen, niet met 300</li>
+        <li>Go/no-go beslissing op basis van echte data</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="week-grid">
+    <div class="day-card">
+      <div class="day-head"><div class="day-name">MA</div><div class="day-focus">Setup</div></div>
+      <div class="day-body">
+        <div class="day-task flow">SharePoint mapstructuur aanmaken (30 min)</div>
+        <div class="day-task flow">Excel-register Zwijndrecht aanmaken (30 min)</div>
+        <div class="day-task flow">MS Forms bouwen + QR-code printen (1u)</div>
+        <div class="day-task measure">⏱ Starttijd noteren: "nulpunt meting"</div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-head" style="background:#7a3010"><div class="day-name">DI</div><div class="day-focus">Flows bouwen</div></div>
+      <div class="day-body">
+        <div class="day-task flow">Flow 1: Forms → Excel → PDF-fiche (2u)</div>
+        <div class="day-task flow">Vlario Word-template aanmaken (1u)</div>
+        <div class="day-task flow">Test: 1 dummy-aansluiting doorlopen</div>
+        <div class="day-task measure">⏱ Doorlooptijd flow meten (trigger → PDF)</div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-head" style="background:#1a5c35"><div class="day-name">WO</div><div class="day-focus">Junior briefing</div></div>
+      <div class="day-body">
+        <div class="day-task flow">QR-code ophangen in werfkeet (5 min)</div>
+        <div class="day-task flow">Junior: 1 echte aansluiting invullen samen (30 min)</div>
+        <div class="day-task measure">⏱ Tijd meten: van sleuf naar ingevuld formulier</div>
+        <div class="day-task measure">⏱ Vergelijk: hoe lang deed hij het vroeger?</div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-head" style="background:#4a3580"><div class="day-name">DO</div><div class="day-focus">Productie</div></div>
+      <div class="day-body">
+        <div class="day-task flow">Junior vult zelfstandig 5–10 aansluitingen in</div>
+        <div class="day-task flow">Flow 3 testen: restpunten invullen + alert</div>
+        <div class="day-task measure">⏱ Tel fouten/incomplete formulieren</div>
+        <div class="day-task measure">⏱ Noteer vragen van Junior</div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-head" style="background:#5a4510"><div class="day-name">VR</div><div class="day-focus">Evaluatie</div></div>
+      <div class="day-body">
+        <div class="day-task eval">📊 Meetresultaten verzamelen</div>
+        <div class="day-task eval">📊 Vergelijk: voor vs. na tijden</div>
+        <div class="day-task eval">📊 Fouten & feedback verwerken</div>
+        <div class="day-task eval">✅ GO / NO-GO beslissing</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- METING FLOW -->
+  <div class="measure-flow">
+    <div class="mf-title">Flow 6 — Piloot Meting <span class="new-flow-badge">NIEUW</span></div>
+    <div class="mf-sub">Automatische tijdregistratie gedurende de pilootweek</div>
+    <div class="mf-chain">
+      <div class="mf-node">
+        <div class="mf-node-num">01</div>
+        <div class="mf-node-label">Forms ingediend</div>
+        <div class="mf-node-tool">tijdstempel T1</div>
+      </div>
+      <div class="mf-node">
+        <div class="mf-node-num">02</div>
+        <div class="mf-node-label">PDF aangemaakt</div>
+        <div class="mf-node-tool">tijdstempel T2</div>
+      </div>
+      <div class="mf-node">
+        <div class="mf-node-num">03</div>
+        <div class="mf-node-label">Doorlooptijd = T2−T1</div>
+        <div class="mf-node-tool">opslaan in Metingen-sheet</div>
+      </div>
+      <div class="mf-node">
+        <div class="mf-node-num">04</div>
+        <div class="mf-node-label">Volledigheid check</div>
+        <div class="mf-node-tool">% velden ingevuld</div>
+      </div>
+      <div class="mf-node">
+        <div class="mf-node-num">05</div>
+        <div class="mf-node-label">Foutenteller +1?</div>
+        <div class="mf-node-tool">validatie mislukt?</div>
+      </div>
+      <div class="mf-node">
+        <div class="mf-node-num">06</div>
+        <div class="mf-node-label">Weekrapport VR 16u</div>
+        <div class="mf-node-tool">auto-mail Jolien</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <span class="metric-icon">⏱</span>
+      <div class="metric-title">Tijdsmeting</div>
+      <ul class="metric-list">
+        <li>Doorlooptijd Forms → PDF (doel: &lt;2 min)</li>
+        <li>Tijd Junior per aansluiting op werf (doel: &lt;5 min)</li>
+        <li>Vergelijk met huidige flow (baseline: 60–125 min)</li>
+        <li>Aantal uren bespaard in de pilootweek</li>
+      </ul>
+    </div>
+    <div class="metric-card">
+      <span class="metric-icon">🎯</span>
+      <div class="metric-title">Kwaliteitsmeting</div>
+      <ul class="metric-list">
+        <li>% formulieren volledig ingevuld (doel: &gt;90%)</li>
+        <li>Aantal validatiefouten (doel: &lt;5%)</li>
+        <li>Aantal ontbrekende foto's (doel: &lt;10%)</li>
+        <li>Vlario-fiches direct Vlario-conform? (ja/nee)</li>
+      </ul>
+    </div>
+    <div class="metric-card">
+      <span class="metric-icon">😊</span>
+      <div class="metric-title">Gebruikservaring</div>
+      <ul class="metric-list">
+        <li>Junior: hoe makkelijk was het formulier? (1–5)</li>
+        <li>Aantal keer dat Junior hulp vroeg</li>
+        <li>Problemen met smartphone / QR-code / wifi</li>
+        <li>Welke velden waren onduidelijk?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="eval-strip">
+    <div>
+      <div class="eval-title">Vrijdag: GO of NO-GO</div>
+      <p class="eval-p">Op basis van de meetresultaten beslis je objectief of je uitrolt naar alle 7 fasen. Geen buikgevoel — cijfers beslissen. De data zit automatisch in jouw Metingen-sheet.</p>
+    </div>
+    <div class="go-nogo">
+      <div class="go-box go">
+        <div class="label">✓ GO</div>
+        <div class="sub">Doorlooptijd &lt;5 min<br>Volledigheid &gt;90%<br>Junior comfortabel</div>
+      </div>
+      <div class="go-box nogo">
+        <div class="label">✗ AANPASSEN</div>
+        <div class="sub">Fouten &gt;10%<br>Junior heeft moeite<br>Flow-bugs gevonden</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ TAB 3: SYSTEEM ══ -->
+<div class="panel" id="panel-3">
+
+  <div class="sec-tag">Microsoft 365 · Power Automate</div>
+  <div class="sec-h">Architectuuroverzicht</div>
+  <div class="sec-sub">Alle data stroomt van links naar rechts. Geen stap is manueel.</div>
+
+  <div class="flow-chain">
+    <div class="fc-node"><span class="fc-icon">📱</span><div class="fc-label">Werf</div><div class="fc-tool">MS Forms + QR</div></div>
+    <div class="fc-sep">→</div>
+    <div class="fc-node"><span class="fc-icon">⚡</span><div class="fc-label">Verwerking</div><div class="fc-tool">Power Automate</div></div>
+    <div class="fc-sep">→</div>
+    <div class="fc-node"><span class="fc-icon">🗄️</span><div class="fc-label">Opslag</div><div class="fc-tool">SharePoint + Excel</div></div>
+    <div class="fc-sep">→</div>
+    <div class="fc-node"><span class="fc-icon">📄</span><div class="fc-label">Vlario Fiche</div><div class="fc-tool">Word Online → PDF</div></div>
+    <div class="fc-sep">→</div>
+    <div class="fc-node"><span class="fc-icon">🔔</span><div class="fc-label">Rapportage</div><div class="fc-tool">Teams + Outlook</div></div>
+  </div>
+
+  <div class="flows-grid">
+    <div class="flow-card">
+      <div class="flow-head" style="background:var(--steel)">
+        <div class="flow-num">01</div>
+        <div class="flow-info"><div class="flow-name">Huisaansluitingen + Vlario</div><div class="flow-trigger">Trigger · Forms ingediend</div></div>
+      </div>
+      <div class="flow-body">
+        <div class="flow-step"><div class="step-n">1</div>Auto-ID aangemaakt (ZW-F1-001)</div>
+        <div class="flow-step"><div class="step-n">2</div>44 velden ingevuld in Word-template</div>
+        <div class="flow-step"><div class="step-n">3</div>PDF gegenereerd + opgeslagen SharePoint</div>
+        <div class="flow-step"><div class="step-n">4</div>E-mail + Teams naar Jolien & Junior</div>
+        <div class="flow-step"><div class="step-n">5</div>Excel-register bijgewerkt, status: Aangemaakt</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-head" style="background:#1a5c35">
+        <div class="flow-num">02</div>
+        <div class="flow-info"><div class="flow-name">Weekplanning</div><div class="flow-trigger">Trigger · Vrijdag 15:00</div></div>
+      </div>
+      <div class="flow-body">
+        <div class="flow-step"><div class="step-n" style="background:#1a5c35">1</div>Openstaande adressen per fase ophalen</div>
+        <div class="flow-step"><div class="step-n" style="background:#1a5c35">2</div>Prioritering: fase → datum → blokkering</div>
+        <div class="flow-step"><div class="step-n" style="background:#1a5c35">3</div>Planning-Excel bijgewerkt</div>
+        <div class="flow-step"><div class="step-n" style="background:#1a5c35">4</div>Teams-overzicht volgende week verstuurd</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-head" style="background:#7a3010">
+        <div class="flow-num">03</div>
+        <div class="flow-info"><div class="flow-name">Restpunten & Escalatie</div><div class="flow-trigger">Trigger · Dagelijks 08:00</div></div>
+      </div>
+      <div class="flow-body">
+        <div class="flow-step"><div class="step-n" style="background:#7a3010">1</div>Deadline morgen → herinnering verantwoordelijke</div>
+        <div class="flow-step"><div class="step-n" style="background:#7a3010">2</div>Deadline verstreken → escalatie Jolien</div>
+        <div class="flow-step"><div class="step-n" style="background:#7a3010">3</div>Kritiek >48u → directe Teams-mention</div>
+        <div class="flow-step"><div class="step-n" style="background:#7a3010">4</div>Opgelost → archivering + dashboard</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-head" style="background:#4a3580">
+        <div class="flow-num">04</div>
+        <div class="flow-info"><div class="flow-name">Vorderingsstaten</div><div class="flow-trigger">Trigger · Maandag 07:00</div></div>
+      </div>
+      <div class="flow-body">
+        <div class="flow-step"><div class="step-n" style="background:#4a3580">1</div>Statistieken per fase berekend</div>
+        <div class="flow-step"><div class="step-n" style="background:#4a3580">2</div>Word-template ingevuld met cijfers</div>
+        <div class="flow-step"><div class="step-n" style="background:#4a3580">3</div>PDF → SharePoint + e-mail Jolien</div>
+      </div>
+    </div>
+    <div class="flow-card">
+      <div class="flow-head" style="background:#5a4510">
+        <div class="flow-num">05</div>
+        <div class="flow-info"><div class="flow-name">Nutsleidingen Alerts</div><div class="flow-trigger">Trigger · Dagelijks 07:30</div></div>
+      </div>
+      <div class="flow-body">
+        <div class="flow-step"><div class="step-n" style="background:#5a4510">1</div>7 dagen voor uitvoering → alert Jolien</div>
+        <div class="flow-step"><div class="step-n" style="background:#5a4510">2</div>Vertraagd → geblokkeerde HA's markeren</div>
+        <div class="flow-step"><div class="step-n" style="background:#5a4510">3</div>Status-update werfleider via Teams</div>
+      </div>
+    </div>
+    <div class="flow-card" style="border:2px solid var(--colas)">
+      <div class="flow-head" style="background:var(--colas)">
+        <div class="flow-num">06</div>
+        <div class="flow-info">
+          <div class="flow-name">Piloot Meting <span style="background:white;color:var(--colas);font-size:9px;font-weight:800;padding:2px 6px;letter-spacing:1px;vertical-align:middle;">NIEUW</span></div>
+          <div class="flow-trigger">Trigger · Elke Forms-inzending + VR 16:00</div>
+        </div>
+      </div>
+      <div class="flow-body">
+        <div class="flow-step"><div class="step-n" style="background:var(--colas)">1</div>Tijdstempel T1 (formulier ingediend)</div>
+        <div class="flow-step"><div class="step-n" style="background:var(--colas)">2</div>Tijdstempel T2 (PDF aangemaakt) → T2−T1</div>
+        <div class="flow-step"><div class="step-n" style="background:var(--colas)">3</div>Volledigheid % berekend + fouten geteld</div>
+        <div class="flow-step"><div class="step-n" style="background:var(--colas)">4</div>Alles weggeschreven naar Metingen-sheet</div>
+        <div class="flow-step"><div class="step-n" style="background:var(--colas)">5</div>Vrijdag 16u: weekrapport PDF → Jolien</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</main>
+
+<script>
+function switchTab(n) {
+  document.querySelectorAll('.nav-tab').forEach((b,i) => b.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n-1));
+}
+</script>
+</body>
+</html>

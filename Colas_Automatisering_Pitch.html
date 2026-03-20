@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Colas — Automatisering PUURS & ZWIJNDRECHT</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0f1e;
+    --paper: #f5f2ec;
+    --colas: #e8401c;
+    --colas-dark: #b52e10;
+    --steel: #1c2b4a;
+    --steel-mid: #2e4470;
+    --fog: #ddd8ce;
+    --muted: #8a8278;
+    --success: #1a7a45;
+    --warn: #c47a00;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content:'';
+    position:fixed; inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:0;
+  }
+
+  /* ── HERO HEADER ── */
+  .hero {
+    background: var(--steel);
+    color: white;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content:'';
+    position:absolute; bottom:-1px; left:0; right:0; height:40px;
+    background: var(--paper);
+    clip-path: polygon(0 100%, 100% 100%, 100% 0);
+  }
+  .hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 40px 72px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: end;
+  }
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--colas);
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 7vw, 88px);
+    line-height: 0.92;
+    letter-spacing: 1px;
+  }
+  .hero-title span { color: var(--colas); }
+  .hero-sub {
+    margin-top: 16px;
+    font-size: 15px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 300;
+    max-width: 480px;
+    line-height: 1.6;
+  }
+  .hero-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-end;
+  }
+  .stat-pill {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-left: 3px solid var(--colas);
+    padding: 12px 20px;
+    text-align: right;
+    border-radius: 2px;
+    min-width: 160px;
+  }
+  .stat-pill .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    line-height: 1;
+    color: white;
+  }
+  .stat-pill .lbl {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-top: 2px;
+  }
+
+  /* ── TABS ── */
+  .tabs-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid var(--fog);
+    margin-bottom: 0;
+  }
+  .tab-btn {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 16px 28px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    color: var(--colas);
+    border-bottom-color: var(--colas);
+  }
+  .tab-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    background: var(--fog);
+    border-radius: 50%;
+    font-size: 10px;
+    margin-right: 8px;
+    font-weight: 700;
+  }
+  .tab-btn.active .tab-num {
+    background: var(--colas);
+    color: white;
+  }
+
+  /* ── CONTENT PANELS ── */
+  .panel { display: none; padding: 48px 0 80px; animation: fadeUp 0.35s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+
+  /* ── PANEL 1: PITCH ── */
+  .pitch-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .pitch-card {
+    background: white;
+    border: 1px solid var(--fog);
+    border-top: 4px solid var(--steel);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .pitch-card.red { border-top-color: var(--colas); }
+  .pitch-card.green { border-top-color: var(--success); }
+  .pitch-card::after {
+    content: attr(data-bg);
+    position: absolute;
+    right: 16px; top: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    line-height: 1;
+    color: rgba(0,0,0,0.04);
+    pointer-events: none;
+  }
+  .card-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .card-title.danger { color: var(--colas); }
+  .card-title.go { color: var(--success); }
+  .pain-list, .gain-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .pain-list li, .gain-list li {
+    font-size: 14px;
+    line-height: 1.5;
+    padding-left: 20px;
+    position: relative;
+    color: #333;
+  }
+  .pain-list li::before { content:'✗'; position:absolute; left:0; color:var(--colas); font-weight:700; }
+  .gain-list li::before { content:'✓'; position:absolute; left:0; color:var(--success); font-weight:700; }
+
+  .time-compare {
+    background: var(--steel);
+    color: white;
+    padding: 40px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    margin-top: 8px;
+  }
+  .time-block { text-align: center; }
+  .time-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 1;
+    display: block;
+  }
+  .time-num.before { color: var(--colas); }
+  .time-num.after { color: #4ade80; }
+  .time-unit { font-size: 13px; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; }
+  .time-sub { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 6px; }
+  .time-arrow {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+  }
+  .time-saving {
+    background: var(--colas);
+    color: white;
+    text-align: center;
+    padding: 16px;
+    margin-top: 0;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .time-saving strong {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .roi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .roi-card {
+    background: white;
+    border: 1px solid var(--fog);
+    padding: 24px 20px;
+    text-align: center;
+  }
+  .roi-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    line-height: 1;
+    color: var(--steel);
+  }
+  .roi-lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+
+  /* ── PANEL 2: SYSTEM MAP ── */
+  .sys-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 40px;
+    margin-bottom: 8px;
+  }
+  .sys-sub { font-size: 14px; color: var(--muted); margin-bottom: 40px; }
+
+  .flow-chain {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin-bottom: 32px;
+    overflow-x: auto;
+  }
+  .flow-node {
+    flex: 1;
+    min-width: 140px;
+    background: white;
+    border: 1px solid var(--fog);
+    padding: 24px 20px;
+    position: relative;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .flow-node:hover { background: var(--steel); color: white; transform: translateY(-4px); box-shadow: 0 12px 32px rgba(28,43,74,0.2); z-index:2; }
+  .flow-node:hover .node-tool { color: rgba(255,255,255,0.5); }
+  .flow-node:hover .node-label { color: white; }
+  .flow-node::after {
+    content: '→';
+    position: absolute;
+    right: -14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--muted);
+    z-index: 3;
+    font-weight: 700;
+  }
+  .flow-node:last-child::after { display:none; }
+  .node-icon { font-size: 28px; margin-bottom: 8px; display:block; }
+  .node-label { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .node-tool { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+
+  .flows-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 8px;
+  }
+  .flow-card {
+    background: white;
+    border: 1px solid var(--fog);
+    overflow: hidden;
+  }
+  .flow-card-head {
+    background: var(--steel-mid);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .flow-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    line-height: 1;
+    color: rgba(255,255,255,0.3);
+  }
+  .flow-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+  .flow-card-body { padding: 20px; }
+  .flow-step {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #444;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--fog);
+  }
+  .flow-step:last-child { border:none; }
+  .step-dot {
+    width: 18px; height: 18px;
+    background: var(--steel);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+  .sp-map {
+    background: var(--ink);
+    color: white;
+    padding: 28px 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 2;
+    margin-top: 24px;
+    border-left: 4px solid var(--colas);
+  }
+  .sp-map .dir { color: #64b5f6; }
+  .sp-map .file { color: #a5d6a7; }
+  .sp-map .comment { color: rgba(255,255,255,0.3); }
+
+  /* ── PANEL 3: ONE PAGER ── */
+  .onepager {
+    background: white;
+    border: 1px solid var(--fog);
+    overflow: hidden;
+    max-width: 800px;
+    margin: 0 auto;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.12);
+  }
+  .op-header {
+    background: var(--steel);
+    color: white;
+    padding: 32px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .op-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    line-height: 1;
+    letter-spacing: 2px;
+    color: var(--colas);
+  }
+  .op-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; line-height: 1.2; margin-top: 4px; }
+  .op-meta { text-align: right; font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 1px; line-height: 2; }
+  .op-body { padding: 36px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .op-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    color: var(--steel);
+    border-bottom: 2px solid var(--colas);
+    padding-bottom: 4px;
+    margin-bottom: 14px;
+  }
+  .op-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; border-bottom: 1px dotted var(--fog); font-size: 13px; }
+  .op-row .key { color: var(--muted); }
+  .op-row .val { font-weight: 600; }
+  .op-phases { display: flex; flex-direction: column; gap: 8px; }
+  .op-phase { display: flex; gap: 12px; align-items: flex-start; font-size: 12px; }
+  .op-phase-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    line-height: 1;
+    color: var(--colas);
+    min-width: 20px;
+  }
+  .op-phase-text { line-height: 1.5; color: #333; }
+  .op-phase-tag { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .op-flows { display: flex; flex-direction: column; gap: 6px; }
+  .op-flow-item { display: flex; gap: 10px; align-items: center; font-size: 12px; padding: 6px 10px; background: var(--paper); }
+  .op-flow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--steel); flex-shrink:0; }
+  .op-numbers { grid-column: 1 / -1; background: var(--steel); color: white; padding: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; text-align: center; }
+  .op-big { font-family: 'Bebas Neue', sans-serif; font-size: 44px; color: var(--colas); line-height: 1; }
+  .op-big-lbl { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .op-footer { background: var(--colas); color: white; padding: 16px 40px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+  .op-footer strong { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; }
+
+  .print-btn {
+    display: block;
+    margin: 24px auto 0;
+    background: var(--steel);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .print-btn:hover { background: var(--colas); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-stats { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+    .pitch-grid, .flows-grid, .roi-row { grid-template-columns: 1fr; }
+    .time-compare { grid-template-columns: 1fr; }
+    .time-arrow { transform: rotate(90deg); }
+    .flow-chain { flex-direction: column; }
+    .flow-node::after { content:'↓'; right:50%; top:auto; bottom:-16px; }
+    .op-body { grid-template-columns: 1fr; }
+    .op-numbers { grid-template-columns: repeat(2,1fr); }
+    .tabs-wrap { padding: 0 16px; }
+    .hero-inner { padding: 32px 20px 56px; }
+    .panel { padding: 32px 0 60px; }
+  }
+
+  @media print {
+    .tabs, .tab-btn, .print-btn, .hero { display:none; }
+    .panel { display: block !important; }
+    .onepager { box-shadow: none; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">Colas België NV — Projectautomatisering 2025</div>
+      <h1 class="hero-title">STOP<br>HET<br><span>PAPIER</span>WERK</h1>
+      <p class="hero-sub">PUURS & ZWIJNDRECHT volledig geautomatiseerd. Van WhatsApp-foto's en papieren bonnetjes naar een zelfrijdend digitaal systeem in Microsoft 365.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-pill">
+        <div class="num">97%</div>
+        <div class="lbl">tijdsbesparing</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">425u</div>
+        <div class="lbl">gewonnen/project</div>
+      </div>
+      <div class="stat-pill">
+        <div class="num">5</div>
+        <div class="lbl">geautomatiseerde flows</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(1)">
+      <span class="tab-num">1</span>Management Pitch
+    </button>
+    <button class="tab-btn" onclick="switchTab(2)">
+      <span class="tab-num">2</span>Systeemoverzicht
+    </button>
+    <button class="tab-btn" onclick="switchTab(3)">
+      <span class="tab-num">3</span>One-Pager
+    </button>
+  </div>
+
+  <!-- ══ TAB 1: MANAGEMENT PITCH ══ -->
+  <div class="panel active" id="panel-1">
+
+    <div class="pitch-grid">
+      <div class="pitch-card red" data-bg="NU">
+        <div class="card-label">Huidige situatie — elke huisaansluiting</div>
+        <div class="card-title danger">Dit kost ons geld</div>
+        <ul class="pain-list">
+          <li>Foto's via WhatsApp, losse notities, papieren bonnetjes</li>
+          <li>Werfleider sorteert dagelijks 15-30 min chaotische berichten</li>
+          <li>Dubbele invoer: werf → werfleider → admin → Geo-IT → Excel</li>
+          <li>Elke Vlario-fiche: 15-30 min handwerk per aansluiting</li>
+          <li>Fouten, vergeten restpunten, gemiste deadlines</li>
+          <li>Junior niet fulltime → dingen vallen door de mazen</li>
+        </ul>
+      </div>
+      <div class="pitch-card green" data-bg="STRAKS">
+        <div class="card-label">Na automatisering — zelfde aansluiting</div>
+        <div class="card-title go">Dit doet het systeem voor ons</div>
+        <ul class="gain-list">
+          <li>Junior vult 1 formulier in op smartphone (QR-code in werfkeet)</li>
+          <li>Power Automate verwerkt alles automatisch in <60 seconden</li>
+          <li>Vlario-fiche aangemaakt, opgeslagen, verstuurd per e-mail</li>
+          <li>Jolien krijgt Teams-notificatie + PDF, klaar voor Vlario-portaal</li>
+          <li>Restpunten tracken zichzelf — escalatie bij overschrijding</li>
+          <li>Weekplanning & vorderingsstaat genereren zich automatisch</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="time-compare">
+      <div class="time-block">
+        <span class="time-num before">125</span>
+        <div class="time-unit">min / aansluiting</div>
+        <div class="time-sub">Vandaag — papier, WhatsApp, dubbele invoer</div>
+      </div>
+      <div class="time-arrow">→</div>
+      <div class="time-block">
+        <span class="time-num after">5</span>
+        <div class="time-unit">min / aansluiting</div>
+        <div class="time-sub">Na automatisering — formulier + automatische fiche</div>
+      </div>
+    </div>
+    <div class="time-saving">
+      <strong>425 uur bespaard op Zwijndrecht alleen</strong>
+      Dat is meer dan 10 voltijdse werkweken — teruggewonnen met dezelfde mensen
+    </div>
+
+    <div class="roi-row">
+      <div class="roi-card">
+        <div class="roi-num">300</div>
+        <div class="roi-lbl">Aansluitingen Zwijndrecht</div>
+      </div>
+      <div class="roi-card">
+        <div class="roi-num">6u</div>
+        <div class="roi-lbl">Opbouwtijd (eenmalig)</div>
+      </div>
+      <div class="roi-card">
+        <div class="roi-num">€0</div>
+        <div class="roi-lbl">Extra licentiekosten (M365 al actief)</div>
+      </div>
+      <div class="roi-card">
+        <div class="roi-num">4w</div>
+        <div class="roi-lbl">Volledig live na implementatie</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ TAB 2: SYSTEM MAP ══ -->
+  <div class="panel" id="panel-2">
+    <div class="sys-title">Hoe het systeem werkt</div>
+    <div class="sys-sub">Vijf geautomatiseerde flows op één platform — Microsoft 365</div>
+
+    <div class="flow-chain">
+      <div class="flow-node">
+        <span class="node-icon">📱</span>
+        <div class="node-label">Werf</div>
+        <div class="node-tool">MS Forms + QR</div>
+      </div>
+      <div class="flow-node">
+        <span class="node-icon">⚡</span>
+        <div class="node-label">Verwerking</div>
+        <div class="node-tool">Power Automate</div>
+      </div>
+      <div class="flow-node">
+        <span class="node-icon">🗄️</span>
+        <div class="node-label">Opslag</div>
+        <div class="node-tool">SharePoint + Excel</div>
+      </div>
+      <div class="flow-node">
+        <span class="node-icon">📄</span>
+        <div class="node-label">Vlario Fiche</div>
+        <div class="node-tool">Word Online → PDF</div>
+      </div>
+      <div class="flow-node">
+        <span class="node-icon">🔔</span>
+        <div class="node-label">Rapportage</div>
+        <div class="node-tool">Teams + Outlook</div>
+      </div>
+    </div>
+
+    <div class="flows-grid">
+      <div class="flow-card">
+        <div class="flow-card-head">
+          <div class="flow-num">01</div>
+          <div class="flow-name">Huisaansluitingen<br>Intake & Vlario</div>
+        </div>
+        <div class="flow-card-body">
+          <div class="flow-step"><div class="step-dot">▶</div>Trigger: Forms ingediend door Junior/Olivier</div>
+          <div class="flow-step"><div class="step-dot">2</div>Auto-ID aangemaakt (ZW-F1-001...)</div>
+          <div class="flow-step"><div class="step-dot">3</div>Rij toegevoegd aan Excel-register</div>
+          <div class="flow-step"><div class="step-dot">4</div>Vlario Word-template ingevuld (44 velden)</div>
+          <div class="flow-step"><div class="step-dot">5</div>PDF gegenereerd + opgeslagen in SharePoint</div>
+          <div class="flow-step"><div class="step-dot">6</div>E-mail + Teams-notificatie verstuurd</div>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-card-head" style="background:#1a5c35">
+          <div class="flow-num">02</div>
+          <div class="flow-name">Automatische<br>Weekplanning</div>
+        </div>
+        <div class="flow-card-body">
+          <div class="flow-step"><div class="step-dot" style="background:#1a5c35">▶</div>Trigger: elke vrijdag 15:00</div>
+          <div class="flow-step"><div class="step-dot" style="background:#1a5c35">2</div>Openstaande adressen per fase ophalen</div>
+          <div class="flow-step"><div class="step-dot" style="background:#1a5c35">3</div>Geprioriteerd sorteren (fase → datum)</div>
+          <div class="flow-step"><div class="step-dot" style="background:#1a5c35">4</div>Planning-Excel bijgewerkt</div>
+          <div class="flow-step"><div class="step-dot" style="background:#1a5c35">5</div>Teams-bericht met weekoverzicht</div>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-card-head" style="background:#7a3010">
+          <div class="flow-num">03</div>
+          <div class="flow-name">Restpunten<br>Tracking & Escalatie</div>
+        </div>
+        <div class="flow-card-body">
+          <div class="flow-step"><div class="step-dot" style="background:#7a3010">▶</div>Trigger: nieuw restpunt OF dagelijks 08:00</div>
+          <div class="flow-step"><div class="step-dot" style="background:#7a3010">2</div>Deadline morgen → herinnering verantwoordelijke</div>
+          <div class="flow-step"><div class="step-dot" style="background:#7a3010">3</div>Deadline verstreken → escalatie naar Jolien</div>
+          <div class="flow-step"><div class="step-dot" style="background:#7a3010">4</div>Kritiek >48u → directe Teams-mention</div>
+          <div class="flow-step"><div class="step-dot" style="background:#7a3010">5</div>Opgelost → archivering + dashboard update</div>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-card-head" style="background:#4a3580">
+          <div class="flow-num">04</div>
+          <div class="flow-name">Vorderingsstaten<br>Auto-generatie</div>
+        </div>
+        <div class="flow-card-body">
+          <div class="flow-step"><div class="step-dot" style="background:#4a3580">▶</div>Trigger: elke maandag 07:00</div>
+          <div class="flow-step"><div class="step-dot" style="background:#4a3580">2</div>Statistieken berekend per fase</div>
+          <div class="flow-step"><div class="step-dot" style="background:#4a3580">3</div>Word-template ingevuld met cijfers</div>
+          <div class="flow-step"><div class="step-dot" style="background:#4a3580">4</div>PDF verstuurd naar Jolien per e-mail</div>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-card-head" style="background:#5a4510">
+          <div class="flow-num">05</div>
+          <div class="flow-name">Nutsleidingen<br>Coördinatie</div>
+        </div>
+        <div class="flow-card-body">
+          <div class="flow-step"><div class="step-dot" style="background:#5a4510">▶</div>Trigger: dagelijks 07:30</div>
+          <div class="flow-step"><div class="step-dot" style="background:#5a4510">2</div>7 dagen voor uitvoering → alert Jolien</div>
+          <div class="flow-step"><div class="step-dot" style="background:#5a4510">3</div>Vertraagd → geblokkeerde HA's markeren</div>
+          <div class="flow-step"><div class="step-dot" style="background:#5a4510">4</div>Status-update door werfleider via Teams</div>
+        </div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-card-head" style="background:#1c2b4a">
+          <div class="flow-num">06</div>
+          <div class="flow-name">SharePoint<br>Structuur</div>
+        </div>
+        <div class="flow-card-body">
+          <div class="sp-map" style="font-size:11px; padding:16px; margin:0; border:none; background:#0a0f1e; line-height:1.8;">
+            <span class="dir">PUURS/</span> Fase1-3 + Pompstations<br>
+            <span class="dir">ZWIJNDRECHT/</span> Fase1-7<br>
+            &nbsp;&nbsp;<span class="file">Fiches/</span> → PDF per aansluiting<br>
+            &nbsp;&nbsp;<span class="file">Vlario-Definitief/</span> + certNr<br>
+            &nbsp;&nbsp;<span class="file">Restpunten/</span> foto's + status<br>
+            &nbsp;&nbsp;<span class="comment">// alles automatisch gesorteerd</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB 3: ONE-PAGER ══ -->
+  <div class="panel" id="panel-3">
+    <div class="onepager">
+      <div class="op-header">
+        <div>
+          <div class="op-logo">COLAS</div>
+          <div class="op-title">AUTOMATISERING<br>PUURS & ZWIJNDRECHT</div>
+        </div>
+        <div class="op-meta">
+          INTERN DOCUMENT<br>
+          PROJECTMANAGER: JOLIEN<br>
+          PLATFORM: MICROSOFT 365<br>
+          STATUS: IMPLEMENTATIE READY<br>
+          VERSIE 1.0 — 2025
+        </div>
+      </div>
+
+      <div class="op-body">
+
+        <div>
+          <div class="op-section-title">Projecten</div>
+          <div class="op-row"><span class="key">PUURS</span><span class="val">3 fasen + 2 pompstations</span></div>
+          <div class="op-row"><span class="key">Werfleider</span><span class="val">Olivier (fulltime)</span></div>
+          <div class="op-row"><span class="key">ZWIJNDRECHT</span><span class="val">7 fasen, ~300 aansluitingen</span></div>
+          <div class="op-row"><span class="key">Werfleider</span><span class="val">Junior (deeltijds)</span></div>
+          <div class="op-row"><span class="key">Toegang werf</span><span class="val">Beperkt digitaal → QR-code Forms</span></div>
+        </div>
+
+        <div>
+          <div class="op-section-title">5 Geautomatiseerde Flows</div>
+          <div class="op-flows">
+            <div class="op-flow-item"><div class="op-flow-dot"></div><strong>01</strong>&nbsp;Huisaansluitingen intake + Vlario-fiche</div>
+            <div class="op-flow-item"><div class="op-flow-dot"></div><strong>02</strong>&nbsp;Weekplanning auto-generatie (vrijdag 15u)</div>
+            <div class="op-flow-item"><div class="op-flow-dot"></div><strong>03</strong>&nbsp;Restpunten tracking + escalatie</div>
+            <div class="op-flow-item"><div class="op-flow-dot"></div><strong>04</strong>&nbsp;Vorderingsstaten (maandag 7u, PDF)</div>
+            <div class="op-flow-item"><div class="op-flow-dot"></div><strong>05</strong>&nbsp;Nutsleidingen coördinatie + alerts</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="op-section-title">Implementatie (4 weken)</div>
+          <div class="op-phases">
+            <div class="op-phase">
+              <div class="op-phase-num">A</div>
+              <div><div class="op-phase-tag">Week 1-2</div><div class="op-phase-text">SharePoint structuur + Excel-registers + Teams-kanalen + Forms aanmaken</div></div>
+            </div>
+            <div class="op-phase">
+              <div class="op-phase-num">B</div>
+              <div><div class="op-phase-tag">Week 2-3</div><div class="op-phase-text">Flow 1 + Vlario-koppeling + Flow 3 restpunten — direct tijdwinst</div></div>
+            </div>
+            <div class="op-phase">
+              <div class="op-phase-num">C</div>
+              <div><div class="op-phase-tag">Week 3-4</div><div class="op-phase-text">Flow 2 planning + Flow 4 vorderingsstaten + Flow 5 nutsleidingen</div></div>
+            </div>
+            <div class="op-phase">
+              <div class="op-phase-num">D</div>
+              <div><div class="op-phase-tag">Week 5-6</div><div class="op-phase-text">Testen, training Olivier & Junior, historische data invoeren, go-live</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="op-section-title">Vlario Fiche (Zwijndrecht)</div>
+          <div class="op-row"><span class="key">Trigger</span><span class="val">MS Forms (QR-code werf)</span></div>
+          <div class="op-row"><span class="key">Verwerking</span><span class="val">Power Automate, 44 velden</span></div>
+          <div class="op-row"><span class="key">Output</span><span class="val">PDF → SharePoint + e-mail</span></div>
+          <div class="op-row"><span class="key">Vlario upload</span><span class="val">Manueel door Jolien (portaal)</span></div>
+          <div class="op-row"><span class="key">DWA/RWA</span><span class="val">Aparte rij per type (verplicht)</span></div>
+          <div class="op-row"><span class="key">Fotos</span><span class="val">4 stuks direct via Forms-upload</span></div>
+        </div>
+
+        <div class="op-numbers">
+          <div><div class="op-big">125→5</div><div class="op-big-lbl">min per aansluiting</div></div>
+          <div><div class="op-big">425u</div><div class="op-big-lbl">bespaard Zwijndrecht</div></div>
+          <div><div class="op-big">€0</div><div class="op-big-lbl">extra licentiekosten</div></div>
+          <div><div class="op-big">6u</div><div class="op-big-lbl">eenmalige opbouw</div></div>
+        </div>
+
+      </div>
+
+      <div class="op-footer">
+        <div><strong>COLAS BELGIË NV</strong> — Intern gebruik</div>
+        <div>Microsoft 365 · Power Automate · SharePoint · MS Forms · Teams</div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">⬇ Print / Opslaan als PDF</button>
+  </div>
+
+</div>
+
+<script>
+function switchTab(n) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===n-1));
+  document.querySelectorAll('.panel').forEach((p,i) => p.classList.toggle('active', i===n-1));
+}
+</script>
+</body>
+</html>

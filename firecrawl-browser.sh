@@ -1,6 +1,25 @@
 firecrawl browser execute "open https://example.com"
 firecrawl browser execute "snapshot"
 
+curl --request GET \
+  --url https://api.firecrawl.dev/v2/browser \
+  --header 'Authorization: Bearer <token>'
+# {
+#   "success": true,
+#   "sessions": [
+#     {
+#       "id": "<string>",
+#       "status": "active",
+#       "cdpUrl": "<string>",
+#       "liveViewUrl": "<string>",
+#       "interactiveLiveViewUrl": "<string>",
+#       "streamWebView": true,
+#       "createdAt": "2023-11-07T05:31:56Z",
+#       "lastActivity": "2023-11-07T05:31:56Z"
+#     }
+#   ]
+# }
+
 curl -X POST "https://api.firecrawl.dev/v2/browser" \
   -H "Authorization: Bearer $FIRECRAWL_API_KEY" \
   -H "Content-Type: application/json" \

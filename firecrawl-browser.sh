@@ -3,6 +3,8 @@ firecrawl browser execute "snapshot"
 
 curl -X GET "https://api.firecrawl.dev/v2/browser?status=active" \
   -H "Authorization: Bearer $FIRECRAWL_API_KEY"
+# {"success":false,"error":"Unauthorized"}
+
 # {
 #   "success": true,
 #   "sessions": [

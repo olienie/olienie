@@ -1,0 +1,21 @@
+{
+  "name": "olienie",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Untitled-1.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:34063/git/olienie/olienie"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "module",
+  "license": "ISC",
+  "dependencies": {
+    "@mendable/firecrawl-js": "^4.18.0",
+    "playwright-core": "^1.58.2"
+  }
+}

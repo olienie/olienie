@@ -1,9 +1,8 @@
 firecrawl browser execute "open https://example.com"
 firecrawl browser execute "snapshot"
 
-curl --request GET \
-  --url https://api.firecrawl.dev/v2/browser \
-  --header 'Authorization: Bearer <token>'
+curl -X GET "https://api.firecrawl.dev/v2/browser?status=active" \
+  -H "Authorization: Bearer $FIRECRAWL_API_KEY"
 # {
 #   "success": true,
 #   "sessions": [

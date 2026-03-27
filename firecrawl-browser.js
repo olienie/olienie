@@ -2,20 +2,11 @@ import Firecrawl from '@mendable/firecrawl-js';
 
 const firecrawl = new Firecrawl({ apiKey: "fc-YOUR-API-KEY" });
 
-// 1. Launch a session
-const session = await firecrawl.browser();
-console.log(session.cdpUrl); // wss://cdp-proxy.firecrawl.dev/cdp/...
-
-// 2. Execute code
-const result = await firecrawl.browserExecute(session.id, {
-  code: `
-    await page.goto("https://news.ycombinator.com");
-    const title = await page.title();
-    console.log(title);
-  `,
-  language: "node",
+const session = await firecrawl.browser({
+  ttl: 120,
+  activityTtl: 60,
 });
-console.log(result.result); // "Hacker News"
 
-// 3. Close
-await firecrawl.deleteBrowser(session.id);
+console.log(session.id);
+console.log(session.cdpUrl);      // wss://cdp-proxy.firecrawl.dev/cdp/...
+console.log(session.liveViewUrl); // https://liveview.firecrawl.dev/...

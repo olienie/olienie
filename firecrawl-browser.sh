@@ -7,14 +7,13 @@ curl -X GET "https://api.firecrawl.dev/v2/browser?status=active" \
 #   "success": true,
 #   "sessions": [
 #     {
-#       "id": "<string>",
+#       "id": "550e8400-e29b-41d4-a716-446655440000",
 #       "status": "active",
-#       "cdpUrl": "<string>",
-#       "liveViewUrl": "<string>",
-#       "interactiveLiveViewUrl": "<string>",
-#       "streamWebView": true,
-#       "createdAt": "2023-11-07T05:31:56Z",
-#       "lastActivity": "2023-11-07T05:31:56Z"
+#       "cdpUrl": "wss://cdp-proxy.firecrawl.dev/cdp/550e8400-e29b-41d4-a716-446655440000",
+#       "liveViewUrl": "https://liveview.firecrawl.dev/550e8400-e29b-41d4-a716-446655440000",
+#       "interactiveLiveViewUrl": "https://liveview.firecrawl.dev/550e8400-e29b-41d4-a716-446655440000?interactive=true",
+#       "createdAt": "2025-06-01T12:00:00Z",
+#       "lastActivity": "2025-06-01T12:05:30Z"
 #     }
 #   ]
 # }

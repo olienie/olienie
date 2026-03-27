@@ -37,3 +37,5 @@ console.log(result.result);
 console.log(result.stderr);
 console.log(result.exitCode);
 console.log(result.killed);
+
+await firecrawl.deleteBrowser(session.id);

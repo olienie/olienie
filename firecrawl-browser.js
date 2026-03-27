@@ -7,4 +7,9 @@ const result = await firecrawl.browserExecute("YOUR_SESSION_ID", {
   language: "node",
 });
 
-console.log(result);
+console.log(result.success);
+console.log(result.stdout);
+console.log(result.result);
+console.log(result.stderr);
+console.log(result.exitCode);
+console.log(result.killed);

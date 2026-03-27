@@ -15,10 +15,23 @@ curl -X POST "https://api.firecrawl.dev/v2/browser" \
 #   "interactiveLiveViewUrl": "https://liveview.firecrawl.dev/550e8400-e29b-41d4-a716-446655440000?interactive=true"
 # }
 
-curl -X POST "https://api.firecrawl.dev/v2/browser/YOUR_SESSION_ID/execute" \
-  -H "Authorization: Bearer $FIRECRAWL_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "code": "agent-browser snapshot",
-    "language": "bash"
-  }'
+curl --request POST \
+  --url https://api.firecrawl.dev/v2/browser/{sessionId}/execute \
+  --header 'Authorization: Bearer <token>' \
+  --header 'Content-Type: application/json' \
+  --data '
+{
+  "code": "<string>",
+  "language": "node",
+  "timeout": 150
+}
+'
+# {
+#   "success": true,
+#   "stdout": "<string>",
+#   "result": "<string>",
+#   "stderr": "<string>",
+#   "exitCode": 123,
+#   "killed": true,
+#   "error": "<string>"
+# }

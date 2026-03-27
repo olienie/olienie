@@ -2,7 +2,15 @@ import Firecrawl from '@mendable/firecrawl-js';
 
 const firecrawl = new Firecrawl({ apiKey: "fc-YOUR-API-KEY" });
 
-const result = await firecrawl.browserExecute("YOUR_SESSION_ID", {
+const session = await firecrawl.browser({
+  ttl: 600,
+  profile: {
+    name: "my-profile",
+    saveChanges: true,
+  },
+});
+
+const result = await firecrawl.browserExecute(session.id, {
   code: `
 import base64
 

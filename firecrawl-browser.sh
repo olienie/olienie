@@ -26,3 +26,8 @@ curl -X POST "https://api.firecrawl.dev/v2/browser/550e8400-e29b-41d4-a716-44665
 #   "success": true,
 #   "result": "Example Domain"
 # }
+
+# {
+#   "success": true,
+#   "error": "TimeoutError: page.goto: Timeout 30000ms exceeded."
+# }

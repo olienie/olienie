@@ -3,8 +3,24 @@ import Firecrawl from '@mendable/firecrawl-js';
 const firecrawl = new Firecrawl({ apiKey: "fc-YOUR-API-KEY" });
 
 const result = await firecrawl.browserExecute("YOUR_SESSION_ID", {
-  code: 'await page.goto("https://example.com"); const title = await page.title(); console.log(title);',
-  language: "node",
+  code: `
+import base64
+
+async with page.expect_download() as download_info:
+    await page.click('a#download-link')  # Click the element that triggers the download
+
+download = download_info.value
+path = await download.path()
+
+# Optionally save to a known path
+# await download.save_as('/tmp/myfile.pdf')
+
+# Read and output file content as base64
+with open(path, "rb") as f:
+    content = base64.b64encode(f.read()).decode()
+    print(content)
+`,
+  language: "python",
 });
 
 console.log(result.success);

@@ -22,3 +22,7 @@ curl -X POST "https://api.firecrawl.dev/v2/browser/550e8400-e29b-41d4-a716-44665
     "code": "await page.goto(\"https://example.com\")\ntitle = await page.title()\nprint(title)",
     "language": "python"
   }'
+# {
+#   "success": true,
+#   "result": "Example Domain"
+# }

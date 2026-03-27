@@ -1,12 +1,15 @@
 import Firecrawl from '@mendable/firecrawl-js';
+import { chromium } from "playwright-core";
 
 const firecrawl = new Firecrawl({ apiKey: "fc-YOUR-API-KEY" });
+const session = await firecrawl.browser();
 
-const result = await firecrawl.deleteBrowser("YOUR_SESSION_ID");
+const browser = await chromium.connectOverCDP(session.cdpUrl);
+const context = browser.contexts()[0];
+const page = context.pages()[0] || (await context.newPage());
 
-console.log(result.success);
-console.log(result.id);
-console.log(result.cdpUrl);
-console.log(result.liveViewUrl);
-console.log(result.interactiveLiveViewUrl);
-console.log(result.expiresAt);
+await page.goto("https://example.com");
+console.log(await page.title());
+
+await browser.close();
+await firecrawl.deleteBrowser(session.id);
